@@ -1,0 +1,19 @@
+1.txt
+a)
+irmovq $10, %rax
+b)
+addq %rax, %rcx
+c)
+andq %rax, %rax
+je ifzero
+d)
+rrmovq %rbx, %rcx
+rrmovq %rax, %rbx
+rrmovq %rcx, %rax
+e)
+irmovq a, %rax
+mrmovq (%rax), %rdx
+f)
+irmovq $0xbbbb, %rax
+irmovq b, %rbx
+rmmovq %rax, (%rbx)

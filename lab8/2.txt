@@ -1,0 +1,23 @@
+2.ys
+irmovq $8, %r8 #Constant 8
+irmovq $0, %r9 #iteration counter
+irmovq $1, %r10 #constant 1
+irmovq src, %r11 #pointer to src
+irmovq dest, %r12 #pointer to dest
+
+loop:
+#grab data from memory: src
+mrmovq (%r11), %r14
+addq %r8, %r11
+
+#put data back in memory: dest
+rmmovq %r14, (%r12)
+addq %r8, %r12
+
+#iteration stuff
+addq %r10, %r9 #add 1 to counter 
+rrmovq %r9, %r13
+subq %rax, %r13
+jne loop
+#exit loop
+halt

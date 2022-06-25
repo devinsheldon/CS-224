@@ -1,0 +1,73 @@
+4.ys
+# YOUR CODE HERE
+
+irmovq $0x8, %r8    # Constant 8
+irmovq $0, %r9      # Constant 0
+irmovq $1, %r10     # Constant 1
+irmovq data, %rdx   # *pointer to data
+irmovq $0, %r11     # loop index count = 0
+irmovq $0, %rcx     # variable "swapped" = false
+rrmovq %rax, %rbp   # Constant %rbp holds range of bubble loop (length of data minus one)
+subq %r10, %rbp
+rrmovq %rbp, %rbx   #temp copy of rbp (loop range)
+
+# copy of first memory position is %rsi
+# copy of second memory position is %rdi
+# store first value in %r12
+# first value copy in %r13
+# second value in %r14
+
+
+# repeats until not swapped 
+while:
+     
+    # "SWAPPED" = FALSE
+    rrmovq %r9, %rcx 
+    # (re)set index counter to zero
+    rrmovq %r9, %r11
+    # reset pointer start of list (c0 in example case)
+    irmovq data, %rdx
+
+    #iterate over every value in list
+    for:
+        # get first value from memory: data
+        mrmovq (%rdx), %r12
+        # (first value temp is %r13)
+        rrmovq %r12, %r13
+        # store first memory location for later
+        rrmovq %rdx, %rsi 
+        
+        #INCREMENT pointer to second value
+        addq %r8, %rdx
+        # get second value from memory: data
+        mrmovq (%rdx), %r14
+        # store second memory location for later
+        rrmovq %rdx, %rdi 
+        
+        # compare first and second
+        subq %r14, %r13
+        # if out of order (first greater than second), jump down to swap 1st and 2nd
+        jg greaterthan
+    iterateforloop:
+    #increment index
+    addq %r10, %r11
+    # if index does not equal %rax minus one, repeat FOR loop
+    rrmovq %rbp, %rbx   #temp copy of rbp (loop range)
+    subq %r11, %rbx
+    jne for # repeats FOR loop overwhole list
+
+
+#iteration stuff
+#sets exit condition: sets ZF only if still not swapped (rcx = 0)
+addq %rcx, %rcx
+#stay in loop if value is not 0. Else, exit loop
+jne while
+halt
+
+ greaterthan:
+    rmmovq %r12, (%rdi) # places first element in memory spot of the second if larger than the second
+    rmmovq %r14, (%rsi) # places second element in memory spot of the first
+    rrmovq %r10, %rcx   # "SWAPPED" = TRUE
+    jmp iterateforloop
+
+# END OF MY CODE 

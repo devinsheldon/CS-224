@@ -1,0 +1,30 @@
+3.ys
+#store total sum in %rax
+#store next number to add in %rcx
+#store address in %r11 (pointer)
+#store address to add to pointer in %r10
+
+irmovq $0x8, %r8 #Constant 8
+irmovq $0, %r9 #Constant 0
+irmovq list, %r11 #pointer to list
+
+loop:
+#grab addend from memory (list)
+mrmovq (%r11), %rcx 
+#moves pointer to next 8 bytes (addy of next value to add)
+addq %r8, %r11 
+#add value to total
+addq %rcx, %rax
+
+# store next address to add to pointer in %r10 (temp)
+mrmovq (%r11), %r10
+# %r11 holds address of next addend
+rrmovq %r10, %r11
+
+#iteration stuff
+rrmovq %r9, %r13 #put a zero in register 13 (temp)
+#sets exit condition: sets ZF only if pointer is at last value in list (zero)
+subq %r11, %r13 
+#stay in loop if value is not 0. Else, exit loop
+jne loop
+halt

